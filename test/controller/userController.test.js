@@ -37,7 +37,6 @@ describe("User controller com service mocked", () => {
   });
 
   afterEach(() => {
-    // Reseta os mocks, sem esse reset o sinon vai persistir o mock para outros testes
     sinon.restore();
   });
 });
