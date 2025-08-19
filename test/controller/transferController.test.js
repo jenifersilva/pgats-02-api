@@ -6,21 +6,24 @@ const { expect } = require("chai"); // Para fazer asserções com base nas respo
 // Aplicação
 const app = require("../../app.js");
 
+// Service a ser mockado
+const transferService = require("../../service/transferService.js");
+
 // Teste batendo no service
 describe("Transfer controller", () => {
   describe("POST /transfer", () => {
-    // estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
+    // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
     it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
-      const resposta = await request(app) // quero utilizar o supertest para fazer requisições diretamente à minha API (app)
-        .post("/transfer") // faz uma requisição POST informando os dados necessários para uma transferência
+      const resposta = await request(app) // Quero utilizar o supertest para fazer requisições diretamente à minha API (app)
+        .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
         .send({
           from: "tiago",
           to: "jenifer",
           amount: 10,
         });
-      expect(resposta.status).to.equal(400); // verifica o status code da resposta
+      expect(resposta.status).to.equal(400); // Verifica o status code da resposta
       expect(resposta.body).to.have.property(
-        // verifica o body da resposta
+        // Verifica o body da resposta
         "error",
         "Usuário remetente ou destinatário não encontrado"
       );
@@ -31,6 +34,37 @@ describe("Transfer controller", () => {
     it("Quando busco todas as transferências recebo status code 200", async () => {
       const resposta = await request(app).get("/transfers");
       expect(resposta.status).to.equal(200);
+    });
+  });
+});
+
+// Testes com mock
+describe("Transfer controller com service mocked", () => {
+  describe("POST /transfer", () => {
+    // Este teste valida somente o status code do transferController
+    it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
+      // Mockar apenas a função transfer do Service
+      const transferServiceMock = sinon.stub(transferService, "createTransfer");
+      // Simula a resposta de erro do createTransfer do Service
+      transferServiceMock.throws(
+        new Error("Usuário remetente ou destinatário não encontrado")
+      );
+
+      const resposta = await request(app).post("/transfer").send({
+        from: "tiago",
+        to: "jenifer",
+        amount: 10,
+      });
+      expect(resposta.status).to.equal(400);
+      expect(resposta.body).to.have.property(
+        "error",
+        "Usuário remetente ou destinatário não encontrado"
+      );
+    });
+
+    afterEach(() => {
+      // Reseta os mocks, sem esse reset o sinon vai persistir o mock para outros testes
+      sinon.restore();
     });
   });
 });
