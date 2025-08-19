@@ -1,0 +1,39 @@
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.*
+
+# Test coverage
+coverage/
+
+# Jest reports
+*.html
+*.lcov
+
+# VSCode settings
+.vscode/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Relatórios e arquivos temporários de testes
+test/test-report.html
+
+# Outros arquivos temporários
+*.tmp
+*.swp
+*.swo
+
+# Build
+/dist/
+
+# Arquivos de backup
+*~
