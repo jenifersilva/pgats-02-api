@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const app = require("../../app.js");
 const userService = require("../../service/userService.js");
 
-describe("User controller com service mocked", () => {
+describe("User Controller com service mocked", () => {
   describe("POST /register", () => {
     it("Quando informo usuário já existente recebo status code 400", async () => {
       const userServiceMock = sinon.stub(userService, "registerUser");
