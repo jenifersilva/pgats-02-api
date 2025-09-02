@@ -9,8 +9,8 @@ const app = require("../../app.js");
 // Service a ser mockado
 const transferService = require("../../service/transferService.js");
 
-// Teste batendo no service
-describe("Transfer controller", () => {
+// Teste batendo no APP
+describe("Transfer Controller", () => {
   describe("POST /transfer", () => {
     // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
     it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
@@ -39,7 +39,7 @@ describe("Transfer controller", () => {
 });
 
 // Testes com mock
-describe("Transfer controller com service mocked", () => {
+describe("Transfer Controller com service mocked", () => {
   describe("POST /transfer", () => {
     // Este teste valida somente o status code do transferController
     it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
