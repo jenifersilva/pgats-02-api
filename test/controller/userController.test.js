@@ -24,14 +24,12 @@ describe("User Controller com service mocked", () => {
   describe("POST /login", () => {
     it("Quando informo credenciais inválidas recebo status code 401", async () => {
       const userServiceMock = sinon.stub(userService, "authenticateUser");
-      userServiceMock.throws(new Error('Credenciais inválidas'));
+      userServiceMock.throws(new Error("Credenciais inválidas"));
 
-      const resposta = await request(app)
-        .post("/login")
-        .send({
-            username: "string",
-            password: "string"
-        });
+      const resposta = await request(app).post("/login").send({
+        username: "string",
+        password: "string",
+      });
       expect(resposta.status).to.equal(401);
     });
   });

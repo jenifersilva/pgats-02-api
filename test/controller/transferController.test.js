@@ -62,6 +62,59 @@ describe("Transfer Controller com service mocked", () => {
       );
     });
 
+    it("Quando informo valores válidos recebo status code 201", async () => {
+      // Mockar apenas a função transfer do Service
+      const transferServiceMock = sinon.stub(transferService, "createTransfer");
+      // Simula a resposta de sucesso do createTransfer do Service
+      transferServiceMock.returns({
+        from: "tiago",
+        to: "jenifer",
+        amount: 10,
+        date: new Date().toISOString(),
+      });
+
+      const resposta = await request(app).post("/transfer").send({
+        from: "tiago",
+        to: "jenifer",
+        amount: 10,
+      });
+
+      expect(resposta.status).to.equal(201);
+      expect(resposta.body).to.have.property("from", "tiago");
+      expect(resposta.body).to.have.property("to", "jenifer");
+      expect(resposta.body).to.have.property("amount", 10);
+    });
+
+    it.only("Quando informo valores válidos recebo status code 201 com fixture", async () => {
+      // Mockar apenas a função transfer do Service
+      const transferServiceMock = sinon.stub(transferService, "createTransfer");
+      // Simula a resposta de sucesso do createTransfer do Service
+      transferServiceMock.returns({
+        from: "tiago",
+        to: "jenifer",
+        amount: 10,
+        date: new Date().toISOString(),
+      });
+
+      const resposta = await request(app).post("/transfer").send({
+        from: "tiago",
+        to: "jenifer",
+        amount: 10
+      });
+
+      expect(resposta.status).to.equal(201);
+      expect(resposta.body.date).to.be.not.null;
+
+      // Comparar a resposta.body com o json do arquivo de fixture
+      // Preparar Dados - Carregar o arquivo de fixture
+      const respostaEsperada = require('../fixture/responses/transferSuccessfullyCreated.json');
+
+      // Preparar a forma de ignorar campos dinâmicos
+      delete respostaEsperada.date
+      delete resposta.body.date
+      expect(resposta.body).to.deep.equal(respostaEsperada); // to.deep.equal ou to.eql = compara os campos de maneira recursiva sem se importar com a ordem dos campos
+    });
+
     afterEach(() => {
       // Reseta os mocks, sem esse reset o sinon vai persistir o mock para outros testes
       sinon.restore();
