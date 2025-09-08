@@ -5,10 +5,20 @@
     "version": "1.0.0",
     "description": "API para login, registro, consulta de usuários e transferências."
   },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
   "paths": {
-    "/register": {
+    "/users/register": {
       "post": {
         "summary": "Registrar usuário",
+        "description": "Cria um novo usuário na aplicação. O campo 'favorecidos' é opcional e pode ser usado para definir usuários favoritos para transferências.",
         "requestBody": {
           "required": true,
           "content": {
@@ -16,22 +26,32 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "username": { "type": "string" },
-                  "password": { "type": "string" },
-                  "favorecidos": { "type": "array", "items": { "type": "string" } }
+                  "username": { "type": "string", "example": "joao" },
+                  "password": { "type": "string", "example": "senha123" },
+                  "favorecidos": { "type": "array", "items": { "type": "string" }, "example": ["maria", "pedro"] }
                 },
                 "required": ["username", "password"]
+              },
+              "examples": {
+                "usuarioSimples": {
+                  "summary": "Usuário sem favorecidos",
+                  "value": { "username": "joao", "password": "senha123" }
+                },
+                "usuarioComFavorecidos": {
+                  "summary": "Usuário com favorecidos",
+                  "value": { "username": "joao", "password": "senha123", "favorecidos": ["maria", "pedro"] }
+                }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Usuário registrado" },
-          "400": { "description": "Erro de validação" }
+          "201": { "description": "Usuário registrado com sucesso." },
+          "400": { "description": "Erro de validação. Usuário já existe ou dados inválidos." }
         }
       }
     },
-    "/login": {
+    "/users/login": {
       "post": {
         "summary": "Login de usuário",
         "requestBody": {
@@ -67,6 +87,7 @@
     "/transfer": {
       "post": {
         "summary": "Realizar transferência",
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -85,15 +106,18 @@
         },
         "responses": {
           "201": { "description": "Transferência realizada" },
-          "400": { "description": "Erro de validação" }
+          "400": { "description": "Erro de validação" },
+          "401": { "description": "Token não fornecido ou inválido" }
         }
       }
     },
     "/transfers": {
       "get": {
         "summary": "Consultar transferências",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
-          "200": { "description": "Lista de transferências" }
+          "200": { "description": "Lista de transferências" },
+          "401": { "description": "Token não fornecido ou inválido" }
         }
       }
     }

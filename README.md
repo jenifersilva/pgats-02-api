@@ -14,21 +14,50 @@ Esta API permite login, registro de usuários, consulta de usuários e transfer�
    npm install express swagger-ui-express
    ```
 
+
 ## Executando a API
 
 - Para iniciar o servidor:
-  ```bash
-  node server.js
-  ```
+   ```bash
+   node server.js
+   ```
 - Acesse a documentação Swagger em: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
-## Endpoints
+## Autenticação JWT
 
-- `POST /register`: Registra um novo usuário. Não permite usuários duplicados.
-- `POST /login`: Realiza login. Usuário e senha obrigatórios.
+- O login (`POST /users/login`) retorna um token JWT.
+- As rotas de transferência (`POST /transfer` e `GET /transfers`) exigem autenticação via Bearer Token (JWT).
+- Para acessar essas rotas, inclua o header:
+   ```
+   Authorization: Bearer <seu_token_jwt>
+   ```
+- O Swagger está configurado para permitir o envio do token nas rotas protegidas.
+
+- `POST /users/register`: Registra um novo usuário. Não permite usuários duplicados. O campo `favorecidos` é opcional e pode ser usado para definir usuários favoritos para transferências.
+- `POST /users/login`: Realiza login. Usuário e senha obrigatórios. Retorna um token JWT.
 - `GET /users`: Lista todos os usuários.
-- `POST /transfer`: Realiza transferência. Só permite valores acima de R$ 5.000,00 para favorecidos.
-- `GET /transfers`: Lista todas as transferências.
+- `POST /transfer`: Realiza transferência. Requer autenticação JWT. Só permite valores acima de R$ 5.000,00 para favorecidos.
+- `GET /transfers`: Lista todas as transferências. Requer autenticação JWT.
+
+
+## Exemplos de Registro de Usuário
+
+### Usuário simples
+```json
+{
+   "username": "joao",
+   "password": "senha123"
+}
+```
+
+### Usuário com favorecidos
+```json
+{
+   "username": "joao",
+   "password": "senha123",
+   "favorecidos": ["maria", "pedro"]
+}
+```
 
 ## Regras de Negócio
 
@@ -40,12 +69,14 @@ Esta API permite login, registro de usuários, consulta de usuários e transfer�
 
 Para testar a API, recomenda-se o uso do [Supertest](https://github.com/visionmedia/supertest) junto com frameworks como Jest ou Mocha.
 
+
 ## Estrutura de Diretórios
 
-- `controller/`: Lógica dos endpoints
+- `controller/`: Routers Express para endpoints
 - `service/`: Regras de negócio
 - `model/`: Dados em memória
-- `app.js`: Configuração da aplicação Express
+- `middleware/`: Middlewares (ex: autenticação JWT)
+- `app.js`: Configuração da aplicação Express e uso dos routers
 - `server.js`: Inicialização do servidor
 - `swagger.json`: Documentação Swagger
 
