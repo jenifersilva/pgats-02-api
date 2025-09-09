@@ -11,13 +11,12 @@ const transferService = require("../../service/transferService.js");
 
 // Teste batendo no APP
 describe("Transfer Controller", () => {
-  let token;
-  before(async () => {
+  beforeEach(async () => {
     // Autentica e obtém o token JWT antes dos testes
-    const res = await request(app)
+    const respostaLogin = await request(app)
       .post("/users/login")
       .send({ username: "tiago", password: "senha123" });
-    token = res.body.token;
+    token = respostaLogin.body.token;
   });
 
   describe("POST /transfer", () => {
@@ -40,125 +39,111 @@ describe("Transfer Controller", () => {
         );
       });
     });
-
-    describe("GET /transfers", () => {
-      it("Quando busco todas as transferências recebo status code 200", async () => {
-        const resposta = await request(app)
-          .get("/transfers")
-          .set("Authorization", `Bearer ${token}`);
-        expect(resposta.status).to.equal(200);
-      });
-    });
   });
 
-  // Testes com mock
-  describe("Transfer Controller com service mocked", () => {
-    let authenticateTokenMock;
-    before(() => {
-      // Mocka o middleware de autenticação para sempre permitir acesso
-      const authenticateToken = require("../../middleware/authenticateToken");
-      authenticateTokenMock = sinon
-        .stub(authenticateToken, "call")
-        .callsFake((req, res, next) => next());
+  describe("GET /transfers", () => {
+    it("Quando busco todas as transferências recebo status code 200", async () => {
+      const resposta = await request(app)
+        .get("/transfers")
+        .set("Authorization", `Bearer ${token}`);
+      expect(resposta.status).to.equal(200);
     });
+  });
+});
 
-    afterEach(() => {
-      // Reseta os mocks, sem esse reset o sinon vai persistir o mock para outros testes
-      sinon.restore();
-    });
+// Testes com mock
+describe("Transfer Controller com service mocked", () => {
+  beforeEach(() => {
+    // Mocka o middleware de autenticação para sempre permitir acesso
+    const authenticateToken = require("../../middleware/authenticateToken");
+    authenticateTokenMock = sinon
+      .stub(authenticateToken, "call")
+      .callsFake((req, res, next) => next());
+  });
 
-    describe("POST /transfer", () => {
-      // Este teste valida somente o status code do transferController
-      it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
-        // Mockar apenas a função transfer do Service
-        const transferServiceMock = sinon.stub(
-          transferService,
-          "createTransfer"
-        );
-        // Simula a resposta de erro do createTransfer do Service
-        transferServiceMock.throws(
-          new Error("Usuário remetente ou destinatário não encontrado")
-        );
+  afterEach(() => {
+    // Reseta os mocks, sem esse reset o sinon vai persistir o mock para outros testes
+    sinon.restore();
+  });
 
-        const resposta = await request(app)
-          .post("/transfer")
-          .set("Authorization", `Bearer ${token}`)
-          .send({
-            from: "tiago",
-            to: "jenifer",
-            amount: 10,
-          });
-        expect(resposta.status).to.equal(400);
-        expect(resposta.body).to.have.property(
-          "error",
-          "Usuário remetente ou destinatário não encontrado"
-        );
-      });
+  describe("POST /transfer", () => {
+    // Este teste valida somente o status code e a mensagem de erro do transferController
+    it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
+      // Mockar apenas a função transfer do Service
+      const transferServiceMock = sinon.stub(transferService, "createTransfer");
+      // Simula a resposta de erro do createTransfer do Service
+      transferServiceMock.throws(
+        new Error("Usuário remetente ou destinatário não encontrado")
+      );
 
-      it("Quando informo valores válidos recebo status code 201", async () => {
-        // Mockar apenas a função transfer do Service
-        const transferServiceMock = sinon.stub(
-          transferService,
-          "createTransfer"
-        );
-        // Simula a resposta de sucesso do createTransfer do Service
-        transferServiceMock.returns({
+      const resposta = await request(app)
+        .post("/transfer")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
           from: "tiago",
           to: "jenifer",
           amount: 10,
-          date: new Date().toISOString(),
         });
+      expect(resposta.status).to.equal(400);
+      expect(resposta.body).to.have.property(
+        "error",
+        "Usuário remetente ou destinatário não encontrado"
+      );
+    });
 
-        const resposta = await request(app)
-          .post("/transfer")
-          .set("Authorization", `Bearer ${token}`)
-          .send({
-            from: "tiago",
-            to: "jenifer",
-            amount: 10,
-          });
-
-        expect(resposta.status).to.equal(201);
-        expect(resposta.body).to.have.property("from", "tiago");
-        expect(resposta.body).to.have.property("to", "jenifer");
-        expect(resposta.body).to.have.property("amount", 10);
+    it("Quando informo valores válidos recebo status code 201", async () => {
+      const transferServiceMock = sinon.stub(transferService, "createTransfer");
+      transferServiceMock.returns({
+        from: "tiago",
+        to: "jenifer",
+        amount: 10,
+        date: new Date().toISOString(),
       });
 
-      it("Quando informo valores válidos recebo status code 201 com fixture", async () => {
-        // Mockar apenas a função transfer do Service
-        const transferServiceMock = sinon.stub(
-          transferService,
-          "createTransfer"
-        );
-        // Simula a resposta de sucesso do createTransfer do Service
-        transferServiceMock.returns({
+      const resposta = await request(app)
+        .post("/transfer")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
           from: "tiago",
           to: "jenifer",
           amount: 10,
-          date: new Date().toISOString(),
         });
 
-        const resposta = await request(app)
-          .post("/transfer")
-          .set("Authorization", `Bearer ${token}`)
-          .send({
-            from: "tiago",
-            to: "jenifer",
-            amount: 10,
-          });
+      expect(resposta.status).to.equal(201);
+      expect(resposta.body).to.have.property("from", "tiago");
+      expect(resposta.body).to.have.property("to", "jenifer");
+      expect(resposta.body).to.have.property("amount", 10);
+    });
 
-        expect(resposta.status).to.equal(201);
-        expect(resposta.body.date).to.be.not.null;
-
-        // Comparar a resposta.body com o json do arquivo de fixture
-        // Preparar Dados - Carregar o arquivo de fixture
-        const respostaEsperada = require("../fixture/responses/transferSuccessfullyCreated.json");
-
-        // Preparar a forma de ignorar campos dinâmicos
-        delete respostaEsperada.date;
-        delete resposta.body.date;
-        expect(resposta.body).to.deep.equal(respostaEsperada); // to.deep.equal ou to.eql = compara os campos de maneira recursiva sem se importar com a ordem dos campos
+    it("Quando informo valores válidos recebo status code 201 com fixture", async () => {
+      const transferServiceMock = sinon.stub(transferService, "createTransfer");
+      transferServiceMock.returns({
+        from: "tiago",
+        to: "jenifer",
+        amount: 10,
+        date: new Date().toISOString(),
       });
+
+      const resposta = await request(app)
+        .post("/transfer")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          from: "tiago",
+          to: "jenifer",
+          amount: 10,
+        });
+
+      expect(resposta.status).to.equal(201);
+      expect(resposta.body.date).to.be.not.null;
+
+      // Comparar a resposta.body com o json do arquivo de fixture
+      // Preparar Dados - Carregar o arquivo de fixture
+      const respostaEsperada = require("../fixture/responses/transferSuccessfullyCreated.json");
+
+      // Preparar a forma de ignorar campos dinâmicos
+      delete respostaEsperada.date;
+      delete resposta.body.date;
+      expect(resposta.body).to.deep.equal(respostaEsperada); // to.deep.equal ou to.eql = compara os campos de maneira recursiva sem se importar com a ordem dos campos
     });
   });
 });
