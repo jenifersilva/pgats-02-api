@@ -20,24 +20,22 @@ describe("Transfer Controller", () => {
   });
 
   describe("POST /transfer", () => {
+    // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
     it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
-      // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
-      it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
-        const resposta = await request(app) // Quero utilizar o supertest para fazer requisições diretamente à minha API (app)
-          .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
-          .set("Authorization", `Bearer ${token}`)
-          .send({
-            from: "tiago",
-            to: "jenifer",
-            amount: 10,
-          });
-        expect(resposta.status).to.equal(400); // Verifica o status code da resposta
-        expect(resposta.body).to.have.property(
-          // Verifica o body da resposta
-          "error",
-          "Usuário remetente ou destinatário não encontrado"
-        );
-      });
+      const resposta = await request(app) // Quero utilizar o supertest para fazer requisições diretamente à minha API (app)
+        .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          from: "jenifer",
+          to: "teste",
+          amount: 10,
+        });
+      expect(resposta.status).to.equal(400); // Verifica o status code da resposta
+      expect(resposta.body).to.have.property(
+        // Verifica o body da resposta
+        "error",
+        "Usuário remetente ou destinatário não encontrado"
+      );
     });
   });
 
