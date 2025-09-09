@@ -41,8 +41,8 @@ describe("Transfer", () => {
           password: "senha123"
         });
 
-      const resposta = await request("http://localhost:3000") // Quero utilizar o supertest para fazer requisições diretamente à minha API (server)
-        .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
+      const resposta = await request("http://localhost:3000")
+        .post("/transfer")
         .set("Authorization", `Bearer ${respostaLogin.body.token}`)
         .send({
           from: "jenifer",
@@ -50,7 +50,7 @@ describe("Transfer", () => {
           amount: 10,
         });
 
-      expect(resposta.status).to.equal(201); // Verifica o status code da resposta
+      expect(resposta.status).to.equal(201);
     });
   });
 });

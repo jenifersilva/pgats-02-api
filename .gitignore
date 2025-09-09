@@ -26,6 +26,7 @@ Thumbs.db
 
 # Relatórios e arquivos temporários de testes
 test/test-report.html
+mochawesome-report/
 
 # Outros arquivos temporários
 *.tmp

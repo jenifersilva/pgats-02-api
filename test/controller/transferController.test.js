@@ -40,6 +40,7 @@ describe("Transfer Controller", () => {
       });
     });
   });
+
   describe("GET /transfers", () => {
     it("Quando busco todas as transferências recebo status code 200", async () => {
       const resposta = await request(app)
@@ -66,7 +67,7 @@ describe("Transfer Controller com service mocked", () => {
   });
 
   describe("POST /transfer", () => {
-    // Este teste valida somente o status code do transferController
+    // Este teste valida somente o status code e a mensagem de erro do transferController
     it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
       // Mockar apenas a função transfer do Service
       const transferServiceMock = sinon.stub(transferService, "createTransfer");
