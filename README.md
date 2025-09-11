@@ -14,14 +14,29 @@ Esta API permite login, registro de usuários, consulta de usuários e transfer�
    npm install express swagger-ui-express
    ```
 
+## Como executar a API REST
 
-## Executando a API
-
-- Para iniciar o servidor:
+1. Instale as dependências:
    ```bash
-   node server.js
+   npm install
    ```
-- Acesse a documentação Swagger em: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+2. Inicie o servidor REST:
+   ```bash
+   npm start
+   ```
+3. Acesse a documentação Swagger em: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
+## Como executar a API GraphQL
+
+1. Instale as dependências:
+   ```bash
+   npm install apollo-server-express@^3.12.0 express@^4.18.2 graphql jsonwebtoken dotenv
+   ```
+2. Inicie o servidor GraphQL:
+   ```bash
+   npm run start-graphql
+   ```
+3. Acesse o playground GraphQL em: [http://localhost:4000/graphql](http://localhost:4000/graphql)
 
 ## Autenticação JWT
 
