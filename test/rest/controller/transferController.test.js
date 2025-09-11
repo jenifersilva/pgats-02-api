@@ -4,10 +4,10 @@ const sinon = require("sinon"); // Para criar mocks dos services
 const { expect } = require("chai"); // Para fazer asserções com base nas respostas das requisições
 
 // Aplicação
-const app = require("../../app.js");
+const app = require("../../../app.js");
 
 // Service a ser mockado
-const transferService = require("../../service/transferService.js");
+const transferService = require("../../../service/transferService.js");
 
 // Teste batendo no APP
 describe("Transfer Controller", () => {
@@ -53,7 +53,7 @@ describe("Transfer Controller", () => {
 describe("Transfer Controller com service mocked", () => {
   beforeEach(() => {
     // Mocka o middleware de autenticação para sempre permitir acesso
-    const authenticateToken = require("../../middleware/authenticateToken");
+    const authenticateToken = require("../../../middleware/authenticateToken.js");
     authenticateTokenMock = sinon
       .stub(authenticateToken, "call")
       .callsFake((req, res, next) => next());

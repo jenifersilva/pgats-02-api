@@ -27,7 +27,7 @@ const resolvers = {
       return { token, user };
     },
     createTransfer: async (_, { from, to, amount }, { user }) => {
-      if (!user) throw new Error('Not authenticated');
+      if (!user) throw new Error('Token não fornecido');
       return transferService.createTransfer({ from, to, amount });
     },
   },

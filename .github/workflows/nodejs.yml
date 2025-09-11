@@ -22,14 +22,20 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Run controller tests
-      run: npm run test-controller
+    - name: Run REST controller tests
+      run: npm run test-controller-rest
     
-    - name: Start server and run it in background
-      run: npm start &
+    - name: Start REST server and run it in background
+      run: npm run start-rest &
+    
+    - name: Start GraphQL server and run it in background
+      run: npm run start-graphql &
 
     - name: Wait until the server is ready
       run: sleep 5
 
-    - name: Run HTTP tests
-      run: npm run test-external
+    - name: Run REST HTTP tests
+      run: npm run test-external-rest
+    
+    - name: Run GraphQL HTTP tests
+      run: npm run test-external-graphql
