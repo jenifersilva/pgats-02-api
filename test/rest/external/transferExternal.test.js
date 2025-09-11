@@ -3,7 +3,7 @@ const request = require("supertest"); // Para fazer requisições HTTP assíncro
 const { expect } = require("chai"); // Para fazer asserções com base nas respostas das requisições
 
 // Teste batendo no server
-describe("Transfer", () => {
+describe("Transfer - REST via HTTP", () => {
   describe("POST /transfer", () => {
     // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
     it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
@@ -11,7 +11,7 @@ describe("Transfer", () => {
         .post("/users/login")
         .send({
           username: "jenifer",
-          password: "senha123"
+          password: "senha123",
         });
 
       const resposta = await request("http://localhost:3000") // Quero utilizar o supertest para fazer requisições diretamente à minha API (server)
@@ -30,15 +30,39 @@ describe("Transfer", () => {
         "Usuário remetente ou destinatário não encontrado"
       );
     });
-  });
 
-  describe("POST /transfer", () => {
+    it("Quando informo valor maior que o saldo, não deve permitir transferência sem saldo disponível", async () => {
+      const respostaLogin = await request("http://localhost:3000")
+        .post("/users/login")
+        .send({ username: "jenifer", password: "senha123" });
+
+      const resposta = await request("http://localhost:3000")
+        .post("/transfer")
+        .set("Authorization", `Bearer ${respostaLogin.body.token}`)
+        .send({ from: "jenifer", to: "tiago", amount: 1001 });
+
+      expect(resposta.status).to.equal(400);
+      expect(resposta.body).to.have.property(
+        "error",
+        "Saldo insuficiente para realizar a transferência"
+      );
+    });
+
+    it("Quando faço uma transferência sem token de autenticação recebo status code 401", async () => {
+      const res = await request("http://localhost:3000")
+        .post("/transfer")
+        .send({ from: "jenifer", to: "tiago", amount: 10 });
+
+      expect(res.status).to.equal(401);
+      expect(res.body).to.have.property("error", "Token não fornecido");
+    });
+
     it("Quando informo valores válidos recebo status code 201", async () => {
       const respostaLogin = await request("http://localhost:3000")
         .post("/users/login")
         .send({
           username: "jenifer",
-          password: "senha123"
+          password: "senha123",
         });
 
       const resposta = await request("http://localhost:3000")
