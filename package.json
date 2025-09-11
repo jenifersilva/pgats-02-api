@@ -9,6 +9,7 @@
     "test": "mocha 'test/**/*.test.js' --timeout 10000 --reporter mochawesome",
     "test-controller-rest": "mocha 'test/rest/controller/**/*.test.js' --timeout 10000 --reporter mochawesome",
     "test-external-rest": "mocha 'test/rest/external/**/*.test.js' --timeout 10000 --reporter mochawesome",
+    "test-controller-graphql": "mocha 'test/graphql/controller/**/*.test.js' --timeout 10000 --reporter mochawesome",
     "test-external-graphql": "mocha 'test/graphql/external/**/*.test.js' --timeout 10000 --reporter mochawesome"
   },
   "dependencies": {
