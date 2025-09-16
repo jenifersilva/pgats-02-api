@@ -1,7 +1,8 @@
-// Bibliotecas
 const request = require("supertest"); // Para fazer requisições HTTP assíncronas
 const sinon = require("sinon"); // Para criar mocks dos services
-const { expect } = require("chai"); // Para fazer asserções com base nas respostas das requisições
+const { expect, use } = require("chai"); // Para fazer asserções com base nas respostas das requisições
+const chaiExclude = require("chai-exclude");
+use(chaiExclude);
 
 // Aplicação
 const app = require("../../../app.js");
@@ -20,19 +21,17 @@ describe("Transfer Controller", () => {
   });
 
   describe("POST /transfer", () => {
-    // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
-    it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
-      const resposta = await request(app) // Quero utilizar o supertest para fazer requisições diretamente à minha API (app)
-        .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
+    it("Deve retornar erro quando remetente ou destinatário não existirem", async () => {
+      const resposta = await request(app)
+        .post("/transfer")
         .set("Authorization", `Bearer ${token}`)
         .send({
           from: "jenifer",
           to: "teste",
           amount: 10,
         });
-      expect(resposta.status).to.equal(400); // Verifica o status code da resposta
+      expect(resposta.status).to.equal(400);
       expect(resposta.body).to.have.property(
-        // Verifica o body da resposta
         "error",
         "Usuário remetente ou destinatário não encontrado"
       );
@@ -40,7 +39,7 @@ describe("Transfer Controller", () => {
   });
 
   describe("GET /transfers", () => {
-    it("Quando busco todas as transferências recebo status code 200", async () => {
+    it("Deve retornar todas as transferências com sucesso", async () => {
       const resposta = await request(app)
         .get("/transfers")
         .set("Authorization", `Bearer ${token}`);
@@ -65,8 +64,7 @@ describe("Transfer Controller com service mocked", () => {
   });
 
   describe("POST /transfer", () => {
-    // Este teste valida somente o status code e a mensagem de erro do transferController
-    it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
+    it("Deve retornar erro quando remetente ou destinatário não existirem", async () => {
       // Mockar apenas a função transfer do Service
       const transferServiceMock = sinon.stub(transferService, "createTransfer");
       // Simula a resposta de erro do createTransfer do Service
@@ -89,7 +87,7 @@ describe("Transfer Controller com service mocked", () => {
       );
     });
 
-    it("Quando informo valores válidos recebo status code 201", async () => {
+    it("Deve realizar transferência com sucesso", async () => {
       const transferServiceMock = sinon.stub(transferService, "createTransfer");
       transferServiceMock.returns({
         from: "tiago",
@@ -113,11 +111,11 @@ describe("Transfer Controller com service mocked", () => {
       expect(resposta.body).to.have.property("amount", 10);
     });
 
-    it("Quando informo valores válidos recebo status code 201 com fixture", async () => {
+    it("Deve realizar transferência com sucesso - Utilização de fixture", async () => {
       const transferServiceMock = sinon.stub(transferService, "createTransfer");
       transferServiceMock.returns({
-        from: "tiago",
-        to: "jenifer",
+        from: "jenifer",
+        to: "tiago",
         amount: 10,
         date: new Date().toISOString(),
       });
@@ -126,22 +124,17 @@ describe("Transfer Controller com service mocked", () => {
         .post("/transfer")
         .set("Authorization", `Bearer ${token}`)
         .send({
-          from: "tiago",
-          to: "jenifer",
+          from: "jenifer",
+          to: "tiago",
           amount: 10,
         });
 
       expect(resposta.status).to.equal(201);
       expect(resposta.body.date).to.be.not.null;
 
-      // Comparar a resposta.body com o json do arquivo de fixture
-      // Preparar Dados - Carregar o arquivo de fixture
       const respostaEsperada = require("../fixture/responses/transferSuccessfullyCreated.json");
 
-      // Preparar a forma de ignorar campos dinâmicos
-      delete respostaEsperada.date;
-      delete resposta.body.date;
-      expect(resposta.body).to.deep.equal(respostaEsperada); // to.deep.equal ou to.eql = compara os campos de maneira recursiva sem se importar com a ordem dos campos
+      expect(resposta.body).excluding("date").to.deep.equal(respostaEsperada); // to.deep.equal ou to.eql = compara os campos de maneira recursiva sem se importar com a ordem dos campos
     });
   });
 });

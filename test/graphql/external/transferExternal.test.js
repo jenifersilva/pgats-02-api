@@ -1,53 +1,53 @@
-// Testes automatizados para a Mutation de Transfers via GraphQL
 const request = require("supertest");
-const { expect } = require("chai");
+const { expect, use } = require("chai");
+const chaiExclude = require("chai-exclude");
+use(chaiExclude);
+
+require("dotenv").config();
+
+const transferRequest = require("../fixture/requests/transfer/transferRequest.json");
 
 describe("Transfer - GraphQL via HTTP", () => {
-  const graphqlUrl = "http://localhost:4000/graphql";
-  const transferMutation = require('../fixture/mutations/transferMutation')
-  const loginRequest = require('../fixture/requests/loginRequest')
-
-  beforeEach(async () => {
-    const respostaLogin = await request(graphqlUrl)
+  before(async () => {
+    const loginRequest = require("../fixture/requests/login/loginRequest.json");
+    const loginUser = await request(process.env.BASE_URL_GRAPHQL)
       .post("")
       .send(loginRequest);
-    token = respostaLogin.body.data.loginUser.token;
-  })
+    token = loginUser.body.data.loginUser.token;
+  });
 
   it("Deve realizar transferência com sucesso", async () => {
-    const resposta = await request(graphqlUrl)
+    const resposta = await request(process.env.BASE_URL_GRAPHQL)
       .post("")
       .set("Authorization", `Bearer ${token}`)
-      .send({
-        query: transferMutation,
-        variables: { from: "jenifer", to: "tiago", amount: 10 }
-      });
+      .send(transferRequest);
 
+    const respostaEsperada = require("../fixture/responses/transferSuccessfullyCreated.json");
     expect(resposta.status).to.equal(200);
-    expect(resposta.body.data.createTransfer).to.include({ from: "jenifer", to: "tiago", amount: 10 });
+    expect(resposta.body.data.createTransfer)
+      .excluding("date")
+      .to.deep.equal(respostaEsperada);
   });
 
-  it("Não deve permitir transferência sem saldo disponível", async () => {
-    const resposta = await request(graphqlUrl)
-      .post("")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        query: transferMutation,
-        variables: { from: "jenifer", to: "tiago", amount: 1001 }
-      });
+  const testesDeErrosDeNegocio = require("../fixture/requests/transfer/transferRequestWithError.json");
+  testesDeErrosDeNegocio.forEach((teste) => {
+    it(`${teste.nomeDoTeste}`, async () => {
+      const respostaTransferencia = await request(process.env.BASE_URL_GRAPHQL)
+        .post("")
+        .set("Authorization", `Bearer ${token}`)
+        .send(teste.createTransfer);
 
-    expect(resposta.status).to.equal(200);
-    expect(resposta.body).to.have.property("errors");
-    expect(resposta.body.errors[0].message).to.include("Saldo insuficiente");
+      expect(respostaTransferencia.status).to.equal(teste.statusCode);
+      expect(respostaTransferencia.body.errors[0].message).to.equal(
+        teste.mensagemEsperada
+      );
+    });
   });
 
-  it("Não deve permitir transferência sem token de autenticação", async () => {
-    const resposta = await request(graphqlUrl)
+  it("Deve retornar erro quando a transferência for feita sem token de autenticação", async () => {
+    const resposta = await request(process.env.BASE_URL_GRAPHQL)
       .post("")
-      .send({
-        query: transferMutation,
-        variables: { from: "jenifer", to: "tiago", amount: 10 }
-      });
+      .send(transferRequest);
 
     expect(resposta.status).to.equal(200);
     expect(resposta.body).to.have.property("errors");

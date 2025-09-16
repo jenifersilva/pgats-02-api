@@ -1,74 +1,53 @@
-// Bibliotecas
-const request = require("supertest"); // Para fazer requisições HTTP assíncronas
-const { expect } = require("chai"); // Para fazer asserções com base nas respostas das requisições
+const request = require("supertest");
+const { expect, use } = require("chai");
+const chaiExclude = require("chai-exclude");
+use(chaiExclude);
+
+require("dotenv").config();
+
+const transferRequest = require("../fixture/requests/transfer/transferRequest.json");
 
 // Teste batendo no server
 describe("Transfer - REST via HTTP", () => {
-  const restUrl = "http://localhost:3000";
+  before(async () => {
+    const loginRequest = require("../fixture/requests/login/loginRequest.json");
+    const respostaLogin = await request(process.env.BASE_URL_REST)
+      .post("/users/login")
+      .send(loginRequest);
 
-  describe("POST /transfer", () => {
-    // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
+    token = respostaLogin.body.token;
+  });
 
-    beforeEach(async () => {
-      // Autentica e obtém o token JWT antes dos testes
-      const respostaLogin = await request(restUrl)
-        .post("/users/login")
-        .send({ username: "jenifer", password: "senha123" });
+  it("Deve realizar transferência com sucesso", async () => {
+    const resposta = await request(process.env.BASE_URL_REST)
+      .post("/transfer")
+      .set("Authorization", `Bearer ${token}`)
+      .send(transferRequest);
 
-      token = respostaLogin.body.token;
-    });
+    expect(resposta.status).to.equal(201);
+    const respostaEsperada = require("../fixture/responses/transferSuccessfullyCreated.json");
+    expect(resposta.body).excluding("date").to.deep.equal(respostaEsperada);
+  });
 
-    it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
-      const resposta = await request(restUrl) // Quero utilizar o supertest para fazer requisições diretamente à minha API (server)
-        .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          from: "jenifer",
-          to: "teste",
-          amount: 10,
-        });
-
-      expect(resposta.status).to.equal(400); // Verifica o status code da resposta
-      expect(resposta.body).to.have.property(
-        // Verifica o body da resposta
-        "error",
-        "Usuário remetente ou destinatário não encontrado"
-      );
-    });
-
-    it("Quando informo valor maior que o saldo, não deve permitir transferência sem saldo disponível", async () => {
-      const resposta = await request(restUrl)
+  const testesDeErrosDeNegocio = require("../fixture/requests/transfer/transferRequestWithError.json");
+  testesDeErrosDeNegocio.forEach((teste) => {
+    it(`${teste.nomeDoTeste}`, async () => {
+      const respostaTransferencia = await request(process.env.BASE_URL_REST)
         .post("/transfer")
         .set("Authorization", `Bearer ${token}`)
-        .send({ from: "jenifer", to: "tiago", amount: 1001 });
+        .send(teste.createTransfer);
 
-      expect(resposta.status).to.equal(400);
-      expect(resposta.body).to.have.property(
-        "error",
-        "Saldo insuficiente para realizar a transferência"
-      );
+      expect(respostaTransferencia.status).to.equal(teste.statusCode);
+      expect(respostaTransferencia.body.error).to.equal(teste.mensagemEsperada);
     });
+  });
 
-    it("Quando faço uma transferência sem token de autenticação recebo status code 401", async () => {
-      const resposta = await request(restUrl)
-        .post("/transfer")
-        .send({ from: "jenifer", to: "tiago", amount: 10 });
+  it("Deve retornar erro quando a transferência for feita sem token de autenticação", async () => {
+    const resposta = await request(process.env.BASE_URL_REST)
+      .post("/transfer")
+      .send(transferRequest);
 
-      expect(resposta.status).to.equal(401);
-      expect(resposta.body).to.have.property("error", "Token não fornecido");
-    });
-
-    it("Quando informo valores válidos recebo status code 201", async () => {
-      const resposta = await request(restUrl)
-        .post("/transfer")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          from: "jenifer",
-          to: "tiago",
-          amount: 10,
-        });
-
-      expect(resposta.status).to.equal(201);
-    });
+    expect(resposta.status).to.equal(401);
+    expect(resposta.body).to.have.property("error", "Token não fornecido");
   });
 });
