@@ -6,6 +6,7 @@
       "to": "tiago",
       "amount": 10000.01
     },
+    "statusCode": 400,
     "mensagemEsperada": "Saldo insuficiente para realizar a transferência"
   },
   {
@@ -15,6 +16,7 @@
       "to": "jenifer",
       "amount": 15
     },
+    "statusCode": 400,
     "mensagemEsperada": "Usuário remetente ou destinatário não encontrado"
   },
   {
@@ -24,6 +26,7 @@
       "to": "teste",
       "amount": 15
     },
+    "statusCode": 400,
     "mensagemEsperada": "Usuário remetente ou destinatário não encontrado"
   }
 ]

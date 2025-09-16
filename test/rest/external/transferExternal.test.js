@@ -37,7 +37,7 @@ describe("Transfer - REST via HTTP", () => {
         .set("Authorization", `Bearer ${token}`)
         .send(teste.createTransfer);
 
-      expect(respostaTransferencia.status).to.equal(400);
+      expect(respostaTransferencia.status).to.equal(teste.statusCode);
       expect(respostaTransferencia.body.error).to.equal(teste.mensagemEsperada);
     });
   });

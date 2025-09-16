@@ -37,7 +37,7 @@ describe("Transfer - GraphQL via HTTP", () => {
         .set("Authorization", `Bearer ${token}`)
         .send(teste.createTransfer);
 
-      expect(respostaTransferencia.status).to.equal(200);
+      expect(respostaTransferencia.status).to.equal(teste.statusCode);
       expect(respostaTransferencia.body.errors[0].message).to.equal(
         teste.mensagemEsperada
       );

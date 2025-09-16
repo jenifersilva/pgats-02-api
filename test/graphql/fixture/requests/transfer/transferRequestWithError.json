@@ -9,6 +9,7 @@
         "amount": 10000.01
       }
     },
+    "statusCode": 200,
     "mensagemEsperada": "Saldo insuficiente para realizar a transferência"
   },
   {
@@ -21,6 +22,7 @@
         "amount": 15
       }
     },
+    "statusCode": 200,
     "mensagemEsperada": "Usuário remetente ou destinatário não encontrado"
   },
   {
@@ -33,6 +35,7 @@
         "amount": 15
       }
     },
+    "statusCode": 200,
     "mensagemEsperada": "Usuário remetente ou destinatário não encontrado"
   }
 ]
