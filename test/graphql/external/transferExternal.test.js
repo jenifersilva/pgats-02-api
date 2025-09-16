@@ -1,6 +1,9 @@
 // Testes automatizados para a Mutation de Transfers via GraphQL
 const request = require("supertest");
-const { expect } = require("chai");
+const { expect, use } = require("chai");
+const chaiExclude = require("chai-exclude");
+use(chaiExclude);
+
 const graphqlUrl = "http://localhost:4000/graphql";
 const transferRequest = require("../fixture/requests/transferRequest.json");
 
@@ -22,11 +25,10 @@ describe("Transfer - GraphQL via HTTP", () => {
       .send(transferRequest);
 
     const respostaEsperada = require("../fixture/responses/transferSuccessfullyCreated.json");
-    delete respostaEsperada.date;
-    delete resposta.body.date;
-
     expect(resposta.status).to.equal(200);
-    expect(resposta.body.data.createTransfer).to.deep.equal(respostaEsperada);
+    expect(resposta.body.data.createTransfer)
+      .excluding("date")
+      .to.deep.equal(respostaEsperada);
   });
 
   it("Não deve permitir transferência sem saldo disponível", async () => {

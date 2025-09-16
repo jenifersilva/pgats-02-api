@@ -12,9 +12,9 @@
     "test-controller-graphql": "mocha 'test/graphql/controller/**/*.test.js' --timeout 10000 --reporter mochawesome",
     "test-external-graphql": "mocha 'test/graphql/external/**/*.test.js' --timeout 10000 --reporter mochawesome"
   },
-  "dependencies": {
+  "devDependencies": {
     "apollo-server-express": "^3.13.0",
-    "chai": "^5.3.1",
+    "chai": "4.5.0",
     "dotenv": "^17.2.2",
     "express": "^4.21.2",
     "graphql": "^16.11.0",
@@ -22,9 +22,8 @@
     "mocha": "^11.7.1",
     "sinon": "^21.0.0",
     "supertest": "^7.1.4",
-    "swagger-ui-express": "^4.6.3"
-  },
-  "devDependencies": {
-    "mochawesome": "^7.1.3"
+    "swagger-ui-express": "^4.6.3",
+    "mochawesome": "^7.1.3",
+    "chai-exclude": "^2.1.1"
   }
 }
