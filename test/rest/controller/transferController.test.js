@@ -21,7 +21,7 @@ describe("Transfer Controller", () => {
 
   describe("POST /transfer", () => {
     // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
-    it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
+    it("Deve retornar erro quando remetente ou destinatário não existirem", async () => {
       const resposta = await request(app) // Quero utilizar o supertest para fazer requisições diretamente à minha API (app)
         .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
         .set("Authorization", `Bearer ${token}`)
@@ -40,7 +40,7 @@ describe("Transfer Controller", () => {
   });
 
   describe("GET /transfers", () => {
-    it("Quando busco todas as transferências recebo status code 200", async () => {
+    it("Deve retornar todas as transferências com sucesso", async () => {
       const resposta = await request(app)
         .get("/transfers")
         .set("Authorization", `Bearer ${token}`);
@@ -66,7 +66,7 @@ describe("Transfer Controller com service mocked", () => {
 
   describe("POST /transfer", () => {
     // Este teste valida somente o status code e a mensagem de erro do transferController
-    it("Quando informo remetente ou destinatário inexistentes recebo status code 400", async () => {
+    it("Deve retornar erro quando remetente ou destinatário não existirem", async () => {
       // Mockar apenas a função transfer do Service
       const transferServiceMock = sinon.stub(transferService, "createTransfer");
       // Simula a resposta de erro do createTransfer do Service
@@ -89,7 +89,7 @@ describe("Transfer Controller com service mocked", () => {
       );
     });
 
-    it("Quando informo valores válidos recebo status code 201", async () => {
+    it("Deve realizar transferência com sucesso", async () => {
       const transferServiceMock = sinon.stub(transferService, "createTransfer");
       transferServiceMock.returns({
         from: "tiago",
@@ -113,7 +113,7 @@ describe("Transfer Controller com service mocked", () => {
       expect(resposta.body).to.have.property("amount", 10);
     });
 
-    it("Quando informo valores válidos recebo status code 201 com fixture", async () => {
+    it("Deve realizar transferência com sucesso - Utilização de fixture", async () => {
       const transferServiceMock = sinon.stub(transferService, "createTransfer");
       transferServiceMock.returns({
         from: "tiago",

@@ -6,7 +6,7 @@ use(chaiExclude);
 
 require("dotenv").config();
 
-const transferRequest = require("../fixture/requests/transferRequest.json");
+const transferRequest = require("../fixture/requests/transfer/transferRequest.json");
 
 describe("Transfer - GraphQL via HTTP", () => {
   before(async () => {
@@ -15,10 +15,6 @@ describe("Transfer - GraphQL via HTTP", () => {
       .post("")
       .send(loginRequest);
     token = loginUser.body.data.loginUser.token;
-  });
-
-  beforeEach(async () => {
-    transferRequest.variables.amount = 10; //reset json amount
   });
 
   it("Deve realizar transferência com sucesso", async () => {
@@ -34,19 +30,20 @@ describe("Transfer - GraphQL via HTTP", () => {
       .to.deep.equal(respostaEsperada);
   });
 
-  it("Não deve permitir transferência sem saldo disponível", async () => {
-    transferRequest.variables.amount = 1001;
-    const resposta = await request(process.env.BASE_URL_GRAPHQL)
-      .post("")
-      .set("Authorization", `Bearer ${token}`)
-      .send(transferRequest);
+  const testesDeErrosDeNegocio = require('../fixture/requests/transfer/transferRequestWithError.json'); 
+    testesDeErrosDeNegocio.forEach(teste => {
+        it(`${teste.nomeDoTeste}`, async () => {
+            const respostaTransferencia = await request(process.env.BASE_URL_GRAPHQL)
+                .post('')
+                .set('Authorization', `Bearer ${token}`)
+                .send(teste.createTransfer);
 
-    expect(resposta.status).to.equal(200);
-    expect(resposta.body).to.have.property("errors");
-    expect(resposta.body.errors[0].message).to.include("Saldo insuficiente");
-  });
+            expect(respostaTransferencia.status).to.equal(200);
+            expect(respostaTransferencia.body.errors[0].message).to.equal(teste.mensagemEsperada);
+        });
+    });
 
-  it("Não deve permitir transferência sem token de autenticação", async () => {
+  it("Deve retornar erro quando a transferência for feita sem token de autenticação", async () => {
     const resposta = await request(process.env.BASE_URL_GRAPHQL)
       .post("")
       .send(transferRequest);

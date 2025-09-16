@@ -6,7 +6,7 @@ const userService = require("../../../service/userService.js");
 
 describe("User Controller", () => {
   describe("POST /users/register", () => {
-    it("Quando informo usuário já existente recebo status code 400", async () => {
+    it("Deve retornar erro quando o usuário já existir", async () => {
       const resposta = await request(app)
         .post("/users/register")
         .send({
@@ -17,7 +17,7 @@ describe("User Controller", () => {
       expect(resposta.status).to.equal(400);
     });
 
-    it("Quando informo dados válidos, o usuário é criado com status code 201", async () => {
+    it("Deve criar usuário com sucesso", async () => {
       const resposta = await request(app)
         .post("/users/register")
         .send({
@@ -30,7 +30,7 @@ describe("User Controller", () => {
   });
 
   describe("POST /users/login", () => {
-    it("Quando informo credenciais inválidas recebo status code 401", async () => {
+    it("Deve retornar erro quando as credenciais forem inválidas", async () => {
       const resposta = await request(app)
         .post("/users/login")
         .send({
@@ -44,7 +44,7 @@ describe("User Controller", () => {
 
 describe("User Controller com service mocked", () => {
   describe("POST /users/register", () => {
-    it("Quando informo usuário já existente recebo status code 400", async () => {
+    it("Deve retornar erro quando o usuário já existir", async () => {
       const userServiceMock = sinon.stub(userService, "registerUser");
       userServiceMock.throws(new Error("Usuário já existe"));
 
@@ -58,7 +58,7 @@ describe("User Controller com service mocked", () => {
       expect(resposta.status).to.equal(400);
     });
 
-    it("Quando informo dados válidos, o usuário é criado com status code 201", async () => {
+    it("Deve criar usuário com sucesso", async () => {
       const userServiceMock = sinon.stub(userService, "registerUser");
       userServiceMock.returns({
         username: "user0.1692920450522315",
@@ -78,7 +78,7 @@ describe("User Controller com service mocked", () => {
   });
 
   describe("POST /users/login", () => {
-    it("Quando informo credenciais inválidas recebo status code 401", async () => {
+    it("Deve retornar erro quando as credenciais forem inválidas", async () => {
       const userServiceMock = sinon.stub(userService, "authenticateUser");
       userServiceMock.throws(new Error("Credenciais inválidas"));
 
