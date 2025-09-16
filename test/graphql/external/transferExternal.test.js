@@ -10,7 +10,7 @@ const transferRequest = require("../fixture/requests/transfer/transferRequest.js
 
 describe("Transfer - GraphQL via HTTP", () => {
   before(async () => {
-    const loginRequest = require("../fixture/requests/loginRequest.json");
+    const loginRequest = require("../fixture/requests/login/loginRequest.json");
     const loginUser = await request(process.env.BASE_URL_GRAPHQL)
       .post("")
       .send(loginRequest);
@@ -30,18 +30,20 @@ describe("Transfer - GraphQL via HTTP", () => {
       .to.deep.equal(respostaEsperada);
   });
 
-  const testesDeErrosDeNegocio = require('../fixture/requests/transfer/transferRequestWithError.json'); 
-    testesDeErrosDeNegocio.forEach(teste => {
-        it(`${teste.nomeDoTeste}`, async () => {
-            const respostaTransferencia = await request(process.env.BASE_URL_GRAPHQL)
-                .post('')
-                .set('Authorization', `Bearer ${token}`)
-                .send(teste.createTransfer);
+  const testesDeErrosDeNegocio = require("../fixture/requests/transfer/transferRequestWithError.json");
+  testesDeErrosDeNegocio.forEach((teste) => {
+    it(`${teste.nomeDoTeste}`, async () => {
+      const respostaTransferencia = await request(process.env.BASE_URL_GRAPHQL)
+        .post("")
+        .set("Authorization", `Bearer ${token}`)
+        .send(teste.createTransfer);
 
-            expect(respostaTransferencia.status).to.equal(200);
-            expect(respostaTransferencia.body.errors[0].message).to.equal(teste.mensagemEsperada);
-        });
+      expect(respostaTransferencia.status).to.equal(200);
+      expect(respostaTransferencia.body.errors[0].message).to.equal(
+        teste.mensagemEsperada
+      );
     });
+  });
 
   it("Deve retornar erro quando a transferência for feita sem token de autenticação", async () => {
     const resposta = await request(process.env.BASE_URL_GRAPHQL)

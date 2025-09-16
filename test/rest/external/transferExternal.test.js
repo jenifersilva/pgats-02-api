@@ -1,72 +1,50 @@
-// Bibliotecas
-const request = require("supertest"); // Para fazer requisições HTTP assíncronas
-const { expect } = require("chai"); // Para fazer asserções com base nas respostas das requisições
+const request = require("supertest");
+const { expect } = require("chai");
 
 require("dotenv").config();
 
-// Teste batendo no server
-describe("Transfer - REST via HTTP", () => {
-  // Estrutura do mocha para organizar os testes em grupos (describe) e casos de teste individuais (it)
+const transferRequest = require("../fixture/requests/transfer/transferRequest.json");
 
-  beforeEach(async () => {
-    // Autentica e obtém o token JWT antes dos testes
+// Teste batendo no server
+
+describe("Transfer - REST via HTTP", () => {
+  before(async () => {
+    const loginRequest = require("../fixture/requests/login/loginRequest.json");
     const respostaLogin = await request(process.env.BASE_URL_REST)
       .post("/users/login")
-      .send({ username: "jenifer", password: "senha123" });
+      .send(loginRequest);
 
     token = respostaLogin.body.token;
-  });
-
-  it("Deve retornar erro quando remetente ou destinatário não existirem", async () => {
-    const resposta = await request(process.env.BASE_URL_REST) // Quero utilizar o supertest para fazer requisições diretamente à minha API (server)
-      .post("/transfer") // Faz uma requisição POST informando os dados necessários para uma transferência
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        from: "jenifer",
-        to: "teste",
-        amount: 10,
-      });
-
-    expect(resposta.status).to.equal(400); // Verifica o status code da resposta
-    expect(resposta.body).to.have.property(
-      // Verifica o body da resposta
-      "error",
-      "Usuário remetente ou destinatário não encontrado"
-    );
-  });
-
-  it("Deve retornar erro quando saldo for insuficiente", async () => {
-    const resposta = await request(process.env.BASE_URL_REST)
-      .post("/transfer")
-      .set("Authorization", `Bearer ${token}`)
-      .send({ from: "jenifer", to: "tiago", amount: 1001 });
-
-    expect(resposta.status).to.equal(400);
-    expect(resposta.body).to.have.property(
-      "error",
-      "Saldo insuficiente para realizar a transferência"
-    );
-  });
-
-  it("Deve retornar erro quando a transferência for feita sem token de autenticação", async () => {
-    const resposta = await request(process.env.BASE_URL_REST)
-      .post("/transfer")
-      .send({ from: "jenifer", to: "tiago", amount: 10 });
-
-    expect(resposta.status).to.equal(401);
-    expect(resposta.body).to.have.property("error", "Token não fornecido");
   });
 
   it("Deve realizar transferência com sucesso", async () => {
     const resposta = await request(process.env.BASE_URL_REST)
       .post("/transfer")
       .set("Authorization", `Bearer ${token}`)
-      .send({
-        from: "jenifer",
-        to: "tiago",
-        amount: 10,
-      });
+      .send(transferRequest);
 
     expect(resposta.status).to.equal(201);
+  });
+
+  const testesDeErrosDeNegocio = require("../fixture/requests/transfer/transferRequestWithError.json");
+  testesDeErrosDeNegocio.forEach((teste) => {
+    it(`${teste.nomeDoTeste}`, async () => {
+      const respostaTransferencia = await request(process.env.BASE_URL_REST)
+        .post("/transfer")
+        .set("Authorization", `Bearer ${token}`)
+        .send(teste.createTransfer);
+
+      expect(respostaTransferencia.status).to.equal(400);
+      expect(respostaTransferencia.body.error).to.equal(teste.mensagemEsperada);
+    });
+  });
+
+  it("Deve retornar erro quando a transferência for feita sem token de autenticação", async () => {
+    const resposta = await request(process.env.BASE_URL_REST)
+      .post("/transfer")
+      .send(transferRequest);
+
+    expect(resposta.status).to.equal(401);
+    expect(resposta.body).to.have.property("error", "Token não fornecido");
   });
 });
