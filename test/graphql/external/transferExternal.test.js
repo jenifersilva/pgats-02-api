@@ -1,4 +1,3 @@
-// Testes automatizados para a Mutation de Transfers via GraphQL
 const request = require("supertest");
 const { expect, use } = require("chai");
 const chaiExclude = require("chai-exclude");

@@ -1,12 +1,13 @@
 const request = require("supertest");
-const { expect } = require("chai");
+const { expect, use } = require("chai");
+const chaiExclude = require("chai-exclude");
+use(chaiExclude);
 
 require("dotenv").config();
 
 const transferRequest = require("../fixture/requests/transfer/transferRequest.json");
 
 // Teste batendo no server
-
 describe("Transfer - REST via HTTP", () => {
   before(async () => {
     const loginRequest = require("../fixture/requests/login/loginRequest.json");
@@ -24,6 +25,8 @@ describe("Transfer - REST via HTTP", () => {
       .send(transferRequest);
 
     expect(resposta.status).to.equal(201);
+    const respostaEsperada = require("../fixture/responses/transferSuccessfullyCreated.json");
+    expect(resposta.body).excluding("date").to.deep.equal(respostaEsperada);
   });
 
   const testesDeErrosDeNegocio = require("../fixture/requests/transfer/transferRequestWithError.json");
